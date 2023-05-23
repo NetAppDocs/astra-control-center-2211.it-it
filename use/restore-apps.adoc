@@ -1,0 +1,88 @@
+---
+sidebar: sidebar 
+permalink: use/restore-apps.html 
+keywords: restore app, restoring an app, restore an app, restore 
+summary: 'Astra può ripristinare la configurazione dell"applicazione e lo storage persistente da uno snapshot o da un backup. I backup persistenti dello storage vengono trasferiti dall"archivio di oggetti, pertanto il ripristino da un backup esistente verrà completato più rapidamente.' 
+---
+= Ripristinare le applicazioni
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Astra Control può ripristinare l'applicazione da uno snapshot o da un backup. Il ripristino da uno snapshot esistente sarà più rapido quando si ripristina l'applicazione nello stesso cluster. È possibile utilizzare l'interfaccia utente di Astra Control o. https://docs.netapp.com/us-en/astra-automation/index.html["L'API Astra Control"^] per ripristinare le applicazioni.
+
+
+NOTE: Quando si esegue un ripristino in-place di un'applicazione che utilizza lo storage NetApp ONTAP, lo spazio utilizzato dall'applicazione ripristinata può raddoppiare. Dopo aver eseguito un ripristino in-place, rimuovere eventuali snapshot indesiderati dall'applicazione ripristinata per liberare spazio di storage.
+
+.A proposito di questa attività
+* *Proteggi prima le tue applicazioni*: Si consiglia vivamente di creare un'istantanea o di eseguire il backup dell'applicazione prima di ripristinarla. In questo modo, è possibile clonare lo snapshot o il backup nel caso in cui il ripristino non abbia esito positivo.
+* *Check destination Volumes* (Controlla volumi di destinazione): Se si esegue il ripristino in un cluster diverso, assicurarsi che il cluster utilizzi la stessa modalità di accesso al volume persistente (ad esempio ReadWriteMany). L'operazione di ripristino non riesce se la modalità di accesso al volume persistente di destinazione è diversa.
+* * (Solo cluster OpenShift) Aggiungi policy*: Quando crei un progetto per ospitare un'applicazione su un cluster OpenShift, al progetto (o namespace Kubernetes) viene assegnato un UID SecurityContext. Per consentire ad Astra Control Center di proteggere la tua applicazione e spostarla in un altro cluster o progetto in OpenShift, devi aggiungere policy che consentano all'applicazione di essere eseguita come qualsiasi UID. Ad esempio, i seguenti comandi CLI di OpenShift concedono le policy appropriate a un'applicazione WordPress.
++
+`oc new-project wordpress`
+`oc adm policy add-scc-to-group anyuid system:serviceaccounts:wordpress`
+`oc adm policy add-scc-to-user privileged -z default -n wordpress`
+
+* *Helm ha implementato le applicazioni*: Le applicazioni di cloning implementate con Helm 3 (o aggiornate da Helm 2 a Helm 3) sono completamente supportate. Le app implementate con Helm 2 non sono supportate.
+
+
+.Fasi
+. Selezionare *applicazioni*, quindi selezionare il nome di un'applicazione.
+. Selezionare *Data Protection*.
+. Se si desidera eseguire il ripristino da uno snapshot, tenere selezionata l'icona *Snapshot*. In caso contrario, selezionare l'icona *Backup* per eseguire il ripristino da un backup.
+. Dal menu Options (Opzioni) nella colonna *Actions* (azioni) per lo snapshot o il backup da cui si desidera eseguire il ripristino, selezionare *Restore application* (Ripristina applicazione).
+. Scegliere il tipo di ripristino:
++
+** *Ripristina gli spazi dei nomi originali*: Utilizzare questa procedura per ripristinare l'applicazione sul posto nel cluster originale.
++
+[CAUTION]
+====
+L'esecuzione di un'operazione di ripristino in-place su un'applicazione che condivida le risorse con un'altra applicazione può avere risultati non intenzionale. Tutte le risorse condivise tra le applicazioni vengono sostituite quando viene eseguito un ripristino in-place su una delle applicazioni. Ad esempio, il seguente scenario crea una situazione indesiderabile quando si utilizza la replica di NetApp SnapMirror:
+
+... L'applicazione viene definita `app1` utilizzo dello spazio dei nomi `ns1`.
+... Viene configurata una relazione di replica per `app1`.
+... L'applicazione viene definita `app2` (sullo stesso cluster) utilizzando gli spazi dei nomi `ns1` e. `ns2`.
+... Viene configurata una relazione di replica per `app2`.
+... La replica inversa per `app2`. Questo causa il `app1` app sul cluster di origine da disattivare.
+
+
+====
++
+... Seleziona lo snapshot da utilizzare per ripristinare l'applicazione in-place, che ripristina l'applicazione a una versione precedente di se stessa.
+... Selezionare *Avanti*.
++
+
+NOTE: Se si ripristina uno spazio dei nomi precedentemente cancellato, viene creato un nuovo spazio dei nomi con lo stesso nome come parte del processo di ripristino. Tutti gli utenti che disponevano dei diritti per gestire le applicazioni nello spazio dei nomi precedentemente cancellato devono ripristinare manualmente i diritti nello spazio dei nomi appena ricreato.
+
+... Esaminare i dettagli relativi all'azione di ripristino, digitare "restore" e selezionare *Restore*.
+
+
+** *Ripristina nuovi spazi dei nomi*: Utilizzare questa procedura per ripristinare l'applicazione in un altro cluster o con spazi dei nomi diversi dall'origine.
++
+... Scegliere il cluster di destinazione per l'applicazione che si desidera ripristinare.
+... Immettere uno spazio dei nomi di destinazione per ogni spazio dei nomi di origine associato all'applicazione.
++
+
+NOTE: Astra Control crea nuovi spazi dei nomi di destinazione come parte di questa opzione di ripristino. Gli spazi dei nomi di destinazione specificati non devono essere già presenti nel cluster di destinazione.
+
+... Selezionare *Avanti*.
+... Selezionare lo snapshot da utilizzare per ripristinare l'applicazione.
+... Selezionare *Avanti*.
+... Esaminare i dettagli relativi all'azione di ripristino e selezionare *Restore* (Ripristina).
+
+
+
+
+
+
+.Risultato
+Astra Control ripristina l'applicazione in base alle informazioni fornite. Se hai ripristinato l'applicazione in-place, il contenuto dei volumi persistenti esistenti viene sostituito con il contenuto dei volumi persistenti dell'applicazione ripristinata.
+
+
+NOTE: Dopo un'operazione di protezione dei dati (cloning, backup o ripristino) e il successivo ridimensionamento persistente del volume, si verifica un ritardo fino a venti minuti prima che la nuova dimensione del volume venga visualizzata nell'interfaccia utente Web. L'operazione di protezione dei dati viene eseguita correttamente in pochi minuti ed è possibile utilizzare il software di gestione per il back-end dello storage per confermare la modifica delle dimensioni del volume.
+
+
+IMPORTANT: Qualsiasi utente membro con vincoli di spazio dei nomi in base al nome/ID dello spazio dei nomi o alle etichette dello spazio dei nomi può clonare o ripristinare un'applicazione in un nuovo spazio dei nomi nello stesso cluster o in qualsiasi altro cluster dell'account dell'organizzazione. Tuttavia, lo stesso utente non può accedere all'applicazione clonata o ripristinata nel nuovo namespace. Dopo la creazione di un nuovo spazio dei nomi mediante un'operazione di clone o ripristino, l'amministratore/proprietario dell'account può modificare l'account utente membro e aggiornare i vincoli di ruolo per consentire all'utente interessato di accedere al nuovo spazio dei nomi.
