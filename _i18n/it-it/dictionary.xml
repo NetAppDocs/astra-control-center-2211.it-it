@@ -2655,7 +2655,6 @@
   <block id="dd490b81914dd945601e442a41cb4222" category="sidebar">Community NetApp</block>
   <block id="874d8a5301794a9ca2aba132ac2460f3" category="sidebar">Hub Kubernetes</block>
   <block id="213686afc3803be7caa09348765467fe" category="sidebar">Dove ottenere aiuto</block>
-  <block id="f21f22dde0e0692333a7a28cce456b08" category="sidebar">Tutta la documentazione Astra</block>
   <block id="be11c74c1dd7f307bb80183a90dc2067" category="sidebar">Inizia subito</block>
   <block id="6bdc7c13872089b240b2d2e134bf8244" category="sidebar">Configurare un cert-manager esterno</block>
   <block id="1fe917b01f9a3f87fa2d7d3b7643fac1" category="sidebar">FAQ</block>
@@ -2681,4 +2680,5 @@
   <block id="dd38f906b37d412de7d1c1dcf4cbf31c" category="paragraph"><block ref="dd38f906b37d412de7d1c1dcf4cbf31c" category="inline-link-macro-rx"></block></block>
   <block id="8acb58cbd50ef1b468a020ee0bd351d3" category="inline-link-macro"><block ref="8acb58cbd50ef1b468a020ee0bd351d3" category="inline-link-rx"></block></block>
   <block id="2352c4e1f4d0024ade0869e00e6243f4" category="paragraph"><block ref="2352c4e1f4d0024ade0869e00e6243f4" category="inline-link-macro-rx"></block></block>
+  <block id="0a560904c58e3cede88c521d796e1617" category="sidebar">Documentazione di Astra Control Center</block>
 </blocks>
